@@ -23,37 +23,35 @@ create table if not exists app_priv.user_secrets (
 );
 
 -- chat and group managements
-create table if not exists app_pub.chat_rooms (
+create table if not exists app_pub.rooms (
     id bigserial primary key,
-    person_1 bigint not null references app_pub.users (id) on delete cascade,
-    person_2 bigint not null references app_pub.users (id) on delete cascade,
+    name text not null,
+    name_format json not null default '{}',
+    flag_forum boolean not null default false,
+    create_ts timestamp not null default now(),
     last_message_ts timestamp
 );
 
-create table if not exists app_pub.chat_messages (
+create table if not exists app_pub.participants (
+    room_id bigint not null references app_pub.rooms (id),
+    user_id bigint not null references app_pub.users (id),
+    primary key (room_id, user_id)
+);
+
+create table if not exists app_pub.messages (
     id bigserial primary key,
-    chat_room_id bigint not null references app_pub.chat_rooms (id) on delete cascade,
-    sender_id bigint not null references app_pub.users (id) on delete cascade,
+    room_id bigint not null references app_pub.rooms (id),
+    sender_id bigint not null references app_pub.users (id),
     text text not null,
     create_ts timestamp not null default now()
 );
 
-create table if not exists app_pub.group_rooms (
-    id bigserial primary key,
-    name character varying(64) not null,
-    create_ts timestamp not null default now()
-);
-
-create table if not exists app_pub.group_room_members (
-    group_room_id bigint not null references app_pub.group_rooms (id) on delete cascade,
-    user_id bigint not null references app_pub.users (id) on delete cascade,
-    primary key (group_room_id, user_id)
-);
-
-create table if not exists app_pub.group_messages (
-    id bigserial primary key,
-    group_room_id bigint not null references app_pub.group_rooms (id) on delete cascade,
-    sender_id bigint not null references app_pub.users (id) on delete cascade,
-    text text not null,
-    create_ts timestamp not null default now()
-);
+create view app_pub.v_rooms as
+    select 
+        a.*,
+        b.user_id
+    from 
+        app_pub.rooms as a,
+        app_pub.participants as b
+    where
+        a.id = b.room_id;
