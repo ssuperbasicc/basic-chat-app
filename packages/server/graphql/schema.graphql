@@ -1,0 +1,32 @@
+type NameFormatField {
+    uid1: Int!
+    uname1: String!
+    uid2: Int!
+    uname2: String!
+}
+
+type Room {
+    id: ID!
+    name: String!
+    nameFormat: NameFormatField!
+    flagForum: Boolean!
+    createTs: String!
+    lastMessageTs: String
+}
+
+type Message {
+    id: ID!
+    sender: Int!
+    text: String!
+    ts: String!
+}
+
+type Conversation {
+    messages: [Message!]!
+    havingNext: Boolean!
+}
+
+type Query {
+    rooms (userId: Int!): [Room!]!
+    conversations (roomId: ID!, offset: Int!, limit: Int!): Conversation!
+}
