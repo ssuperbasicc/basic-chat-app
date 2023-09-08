@@ -1,7 +1,37 @@
+import { useEffect } from 'react'
 import logo from './logo.svg';
 import './App.css';
+import SOCKET_CLIENT from './utilities/socket.io'
 
 function App() {
+
+  useEffect(() => {
+    function handleConnect() {
+      console.debug('SERVER CONNECTED')
+    }
+
+    function handleDisconnected() {
+      console.debug('SERVER DISCONNECTED')
+    }
+
+    SOCKET_CLIENT.on('connect', handleConnect)
+    SOCKET_CLIENT.on('disconnect', handleDisconnected)
+
+    return () => {
+      SOCKET_CLIENT.off('connect', handleConnect)
+      SOCKET_CLIENT.off('disconnect', handleDisconnected)
+    }
+  }, [])
+
+  useEffect(() => {
+    SOCKET_CLIENT.connect()
+
+    return () => {
+      SOCKET_CLIENT.disconnect()
+    }
+  }, [])
+  
+
   return (
     <div className="App">
       <header className="App-header">

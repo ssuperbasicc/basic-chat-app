@@ -9,9 +9,15 @@ var appBuild = require('../app')
 var debug = require('debug')('server:server')
 var http = require('http')
 
+const { Server } = require('socket.io')
+const { SOCKETS } = require('../socket.io/registerSockets')
+
 const {
   PORT,
-  HOST
+  HOST,
+
+  WS_CLIENT_ORIGIN,
+  WS_PATH
 } = process.env
 
 appBuild()
@@ -28,6 +34,28 @@ appBuild()
      */
     
     var server = http.createServer(app);
+
+    const io = new Server(server, {
+      path: WS_PATH,
+      cors: {
+        origin: WS_CLIENT_ORIGIN
+      }
+    })
+
+    io.on('connect', (socket) => {
+      console.debug('CLIENT CONNECTED')
+
+      for (let i = 0; i < SOCKETS.length; i++) {
+        const sc = SOCKETS[i]
+        socket[sc.eventMode](sc.eventName, (data) => {
+          sc.eventHandler(socket, data)
+        })       
+      }
+
+      socket.on('disconnect', () => {
+        console.debug('CLIENT DISCONNECTED')
+      })
+    })
     
     /**
      * Listen on provided port, on all network interfaces.
