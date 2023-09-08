@@ -55,3 +55,5 @@ create view app_pub.v_rooms as
         app_pub.participants as b
     where
         a.id = b.room_id;
+
+alter table app_priv.user_secrets add constraint user_secrets_email_unique unique (email);
