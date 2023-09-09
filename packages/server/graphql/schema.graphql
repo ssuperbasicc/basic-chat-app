@@ -26,7 +26,31 @@ type Conversation {
     havingNext: Boolean!
 }
 
+type Credential {
+    token: String!
+}
+
+input RegisterInput {
+    firstName: String
+    lastName: String
+    username: String!
+    email: String!
+    password: String!
+}
+
+type User {
+    id: ID!
+    firstName: String
+    lastName: String
+    username: String!
+}
+
 type Query {
     rooms (userId: Int!): [Room!]!
     conversations (roomId: ID!, offset: Int!, limit: Int!): Conversation!
+}
+
+type Mutation {
+    login (email: String!, password: String!): Credential!
+    register (data: RegisterInput): User!
 }
