@@ -1,20 +1,50 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var express = require('express')
+var path = require('path')
+var cookieParser = require('cookie-parser')
+var logger = require('morgan')
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const gql = require('graphql-tag')
+const { ApolloServer } = require('@apollo/server')
+const { buildSubgraphSchema  } = require('@apollo/subgraph')
+const { expressMiddleware } = require('@apollo/server/express4')
 
-var app = express();
+const resolvers = require('./graphql/resolvers')
+const { readFileSync  } = require('fs')
+const cors = require('cors')
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+const appBuild = async function () {
+    var app = express()
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+    app.use(logger('dev'))
+    app.use(express.json())
+    app.use(express.urlencoded({ extended: false }))
+    app.use(cookieParser())
+    app.use(express.static(path.join(__dirname, 'public')))
+    app.use(cors())
 
-module.exports = app;
+    const typeDefs = gql(
+        readFileSync(
+            "graphql/schema.graphql",
+            { encoding: "utf-8" }
+        )
+    )
+
+    const schema = buildSubgraphSchema({ typeDefs, resolvers })
+
+    const gqlServer = new ApolloServer({
+        schema
+    })
+
+    await gqlServer.start()
+
+    app.use(
+        '/graphql',
+        cors(),
+        express.json(),
+        expressMiddleware(gqlServer)
+    )
+
+    return app
+}
+
+module.exports = appBuild
