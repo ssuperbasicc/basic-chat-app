@@ -14,7 +14,6 @@ export const GET_ROOMS = gql`
                 uname2
             }
             flagForum
-            createTs
             lastMessageTs
         }
     }

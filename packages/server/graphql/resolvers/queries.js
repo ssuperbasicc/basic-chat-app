@@ -62,7 +62,7 @@ const conversations = async (p, args, ctxV, info) => {
         data.rows.pop()
     }
 
-    return { messages: data.rows, havingNext }
+    return { messages: data.rows.reverse(), havingNext }
 }
 
 module.exports = {
