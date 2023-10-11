@@ -26,7 +26,7 @@ const login = async (p, args, ctxV, info) => {
         throw new GraphQLError(
             "Unauthorized.",
             {
-                extensions: { code: 'UNATHORIZED' }
+                extensions: { code: 'UNAUTHORIZED' }
             }
         )
     }

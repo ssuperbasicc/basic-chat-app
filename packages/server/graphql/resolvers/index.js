@@ -8,7 +8,8 @@ const resolvers = {
     },
     Query: {
         rooms: Q.rooms,
-        conversations: Q.conversations
+        conversations: Q.conversations,
+        accountInfos: Q.accountInfos
     }
 }
 
