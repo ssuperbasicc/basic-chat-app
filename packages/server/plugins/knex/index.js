@@ -16,12 +16,13 @@ const knexQ = require('knex')({
         port: MAIN_DB_PORT,
         user: MAIN_DB_USER,
         password: MAIN_DB_PASSWORD,
-        database: MAIN_DB_NAME
+        database: MAIN_DB_NAME,
+        timezone: "UTC"
     },
     pool: {
         min: parseInt(MAIN_DB_MIN_POOL),
         max: parseInt(MAIN_DB_MAX_POOL)
-    }
+    },
 })
 
 module.exports = { knexQ }

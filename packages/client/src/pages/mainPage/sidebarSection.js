@@ -1,6 +1,5 @@
-import { GET_ROOMS } from '../../graphql/queries/rooms'
-import { useQuery } from "@apollo/client"
-import { parseJwt } from "../../utilities/parseJwt" 
+import './style.css'
+import dayJS from '../../utilities/dayjs'
 
 const SidebarSection = (props) => {
     const {
@@ -27,7 +26,7 @@ const SidebarSection = (props) => {
                         nameFormat.uname1
                     }
                 </p>
-                { lastMessageTs }
+                <small className="text-muted">{ dayJS(lastMessageTs).format("MMM DD, YY -  HH.mm") }</small>
             </>
         )
 
@@ -50,29 +49,32 @@ const SidebarSection = (props) => {
 
     return (
         <>
-            <div style={{
-                height: '70vh'
-            }}>
+            <div className="sidebar p-1">
             {
                 data
                 ?
-                <table className="table table-hover">
+                <table className="table table-hover table-striped">
                     <tbody>
                     {
                         data.rooms.map((d, i) => {
                             return (
                                 <tr 
                                     key={i}
-                                    onClick={() => _joinRoom(d.id)}
+                                   
                                 >
                                     <td>
-                                    {
-                                        d.flagForum
-                                        ?
-                                        viewRoomGroup(d)
-                                        :
-                                        viewRoomChat(d)
-                                    }
+                                        <div className="d-flex justify-content-between px-5">
+                                            <div className="cursor-pointer"  onClick={() => _joinRoom(d.id)}>
+                                                {
+                                                    d.flagForum
+                                                    ?
+                                                    viewRoomGroup(d)
+                                                    :
+                                                    viewRoomChat(d)
+                                                }
+                                            </div>
+                                            <strong className="cursor-pointer" onClick={() => console.debug("clicked")}>...</strong>
+                                        </div>
                                     </td>
                                 </tr> 
                             )

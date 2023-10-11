@@ -1,4 +1,6 @@
 const  { knexQ } = require('../../plugins/knex')
+const { dayJS } = require('../../plugins/dayjs')
+
 
 const rooms = async (p, args, ctxV, info) => {
     let data = []
@@ -13,6 +15,10 @@ const rooms = async (p, args, ctxV, info) => {
         'last_message_ts as lastMessageTs'
     )
     .where('user_id', args.userId)
+
+    data.forEach((d, i) => {
+        d.lastMessageTs = dayJS(d.lastMessageTs).utc(true).format() 
+    })
 
     return data
 }
@@ -57,6 +63,10 @@ const conversations = async (p, args, ctxV, info) => {
 
     const data = await knexQ.raw(finalQuery, finalParams)
 
+    data.rows.forEach((d, i) => {
+        d.ts = dayJS(d.ts).utc(true).format()       
+    })
+
     if (data.rows.length > limit) {
         havingNext = true
         data.rows.pop()
@@ -65,7 +75,27 @@ const conversations = async (p, args, ctxV, info) => {
     return { messages: data.rows.reverse(), havingNext }
 }
 
+const accountInfos = async (p, args, ctxV, info) => {
+    const { userId } = args
+
+    const data = await knexQ({
+        a: 'app_pub.users',
+        b: 'app_priv.user_secrets'
+    })
+    .select(
+        'a.id as id',
+        'a.first_name as firstName',
+        'a.last_name as lastName',
+        'a.username as username'
+    )
+    .whereRaw("?? = ??", ['a.id', 'b.id'])
+    .where('a.id', userId)
+
+    return data[0]
+}
+
 module.exports = {
     rooms,
-    conversations
+    conversations,
+    accountInfos
 }

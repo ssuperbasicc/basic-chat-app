@@ -48,6 +48,7 @@ type User {
 type Query {
     rooms (userId: Int!): [Room!]!
     conversations (roomId: ID!, offset: Int!, limit: Int!): Conversation!
+    accountInfos (userId: Int!): User!
 }
 
 type Mutation {
