@@ -1,0 +1,22 @@
+.sidebar {
+    height: 70vh;
+    overflow-y: scroll;
+}
+
+.text-small {
+    font-size: 12px;
+}
+
+@media screen and (max-width: 480px) {
+    .sidebar {
+        height: 30vh;
+        overflow-y: scroll;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .sidebar {
+        height: 30vh;
+        overflow-y: scroll;
+    }
+}

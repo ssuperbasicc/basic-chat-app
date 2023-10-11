@@ -3,9 +3,9 @@ import {
     Form, 
     Button,
     Row,
-    Col,
-    Badge
+    Col
 } from 'react-bootstrap'
+import dayJS from '../../utilities/dayjs'
 
 const MessageSection = (props) => {
     const {
@@ -90,13 +90,38 @@ const MessageSection = (props) => {
                     {
                         messages.map((d,i) => {
                             const flagSender = d.sender == currentUserId
+                            const ts = (<div className="text-small">{dayJS(d.ts).format('YYYY/MM/DD HH.mm')}</div>)
+                            const messageBox = (
+                                <Card 
+                                    className="p-2"
+                                    style={{ 
+                                        maxWidth: '18rem',
+                                        color: '#fff',
+                                        backgroundColor: flagSender ? 'blue' : 'grey'
+                                    }}
+                                >
+                                    {d.text}
+                                </Card>
+                            )
                             return (
                                 <Row key={i}>
                                     <Col>
                                         <div className={`py-1 d-flex justify-content-${flagSender ? 'end' : 'start'}`} >
-                                            <Badge bg={flagSender ? 'primary' : 'secondary'}>
-                                                {d.text}
-                                            </Badge>
+                                            {
+                                                flagSender
+                                                ?
+                                                <>
+                                                   {ts}
+                                                    &nbsp;
+                                                   {messageBox}
+                                                </>
+                                                :
+                                                <>
+                                                    {messageBox}
+                                                    &nbsp;
+                                                   {ts}
+                                                </>
+                                            }
                                         </div>
                                     </Col>
                                 </Row>

@@ -4,14 +4,19 @@ import { parseJwt } from "../../utilities/parseJwt"
 import {
     Card,
     Row,
-    Col
+    Col,
+    Modal,
+    ListGroup
 } from 'react-bootstrap'
 import SidebarSection from "./sidebarSection"
 import MessageSection from "./messageSection"
 import { GET_ROOMS } from '../../graphql/queries/rooms'
 import { GET_MESSAGES } from "../../graphql/queries/messages"
+import { GET_ACCOUNT_INFOS } from "../../graphql/queries/accountInfos"
 import { useQuery, useLazyQuery } from "@apollo/client"
 import SOCKET_CLIENT from "../../utilities/socket.io"
+import mainHero from '../../assets/images/hero.jpg'
+import dayJS from "../../utilities/dayjs"
 
 const MainPage = () => {
     const currentUserId = parseJwt()?.aud
@@ -23,9 +28,33 @@ const MainPage = () => {
     const [activeRoomId, setActiveRoomId] = useState(0)
 
     const [offset, setOffset] = useState(0)
-    const limit = 20
+    const limit = 10
 
     const [isDefaultScreen, setIsDefaultScreen] = useState(true)
+    const [modalState, setModalState] = useState(false)
+    
+    const [fullName, setFullName] = useState("")
+    const [username, setUsername] = useState("")
+
+    const { 
+        loading: loadingAccInfo, 
+        error: errorAccInfo, 
+        data: dataAccInfo
+    } = useQuery(GET_ACCOUNT_INFOS, {
+        onCompleted: (data) => {
+            console.debug(data)
+            const { firstName, lastName, username } = data.accountInfos
+
+            setFullName(`${firstName === null ? "" : firstName} ${lastName === null ? "" : lastName}`)
+            setUsername(username)
+        },
+        onError: (error) => {
+            console.debug(error)
+        },
+        variables: {
+            userId: parseInt(currentUserId)
+        }
+    })
 
     const { 
         loading: loadingRoom, 
@@ -80,19 +109,21 @@ const MainPage = () => {
     }
 
     const _joinRoom = (roomId) => {
-        setIsDefaultScreen(false)
+        if (activeRoomId != roomId ) {
+            setIsDefaultScreen(false)
 
-        SOCKET_CLIENT.emit("JOIN_ROOM", {roomId})
-
-        setActiveRoomId(parseInt(roomId))
-
-        _getChatMessages({
-            variables: {
-                roomId,
-                offset,
-                limit
-            }
-        })
+            SOCKET_CLIENT.emit("JOIN_ROOM", {roomId})
+    
+            setActiveRoomId(parseInt(roomId))
+                
+            _getChatMessages({
+                variables: {
+                    roomId,
+                    offset,
+                    limit
+                }
+            })
+        }
     }
 
     const _handleMessageSent = (data) => {
@@ -106,6 +137,10 @@ const MainPage = () => {
             window.sessionStorage.clear()
             window.location = "/"
         }
+    }
+
+    const _handleModal = () => {
+        setModalState(!modalState)
     }
 
     useEffect(() => {
@@ -136,23 +171,23 @@ const MainPage = () => {
                                 </Col>
                                 <Col>
                                     <div className="d-flex justify-content-end">
-                                        <a
-                                            href="#"
-                                            onClick={_handleLogout}
+                                        <strong 
+                                            className="cursor-pointer"
+                                            onClick={_handleModal}
                                         >
-                                            Logout
-                                        </a>
+                                                ...
+                                        </strong>
                                     </div>
                                 </Col>
                             </Row>
                         </Card.Header>
                         <Card.Body>
                             <div className="p-1">
-                                <Row>
+                                <Row className="row gy-5">
                                     <Col
                                         xl={6}
                                         lg={6}
-                                        md={6}
+                                        md={12}
                                         sm={12}
                                         xs={12}
                                     >
@@ -169,7 +204,7 @@ const MainPage = () => {
                                     <Col
                                         xl={6}
                                         lg={6}
-                                        md={6}
+                                        md={12}
                                         sm={12}
                                         xs={12}
                                     >
@@ -177,7 +212,11 @@ const MainPage = () => {
                                             isDefaultScreen
                                             ?
                                             <div className="text-center my-4">
-                                                Lets start your conversations!
+                                                <img 
+                                                    className="img-fluid"
+                                                    src={mainHero}
+                                                    alt="Main Hero Image"
+                                                />
                                             </div>
                                             :
                                             <MessageSection 
@@ -207,6 +246,44 @@ const MainPage = () => {
                     </Card.Body>
                 </Card>
             </div>
+            <MainModal 
+                modalState={modalState}
+                _handleModal={_handleModal}
+                _handleLogout={_handleLogout}
+
+                fullName={fullName}
+                username={username}
+            />
+        </>
+    )
+}
+
+const MainModal = (props) => {
+    const { 
+        modalState, 
+        _handleModal, 
+        _handleLogout, 
+        fullName, 
+        username 
+    } = props
+    return (
+        <>
+        <Modal size="sm" show={modalState} onHide={_handleModal}>
+            <Modal.Header closeButton>
+            <Modal.Title>Account</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p className="text-muted">{fullName} (<i>{username}</i>)</p>
+                <ListGroup>
+                    <ListGroup.Item 
+                        className="cursor-pointer"
+                        onClick={_handleLogout}
+                    >
+                        Logout
+                    </ListGroup.Item>
+                </ListGroup>
+            </Modal.Body>
+        </Modal>
         </>
     )
 }
